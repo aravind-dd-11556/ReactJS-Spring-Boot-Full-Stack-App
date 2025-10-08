@@ -1,48 +1,64 @@
 package backend.hobbiebackend.service;
 
-import backend.hobbiebackend.model.dto.AppClientSignUpDto;
-import backend.hobbiebackend.model.dto.BusinessRegisterDto;
-import backend.hobbiebackend.model.entities.AppClient;
-import backend.hobbiebackend.model.entities.BusinessOwner;
-import backend.hobbiebackend.model.entities.Hobby;
-import backend.hobbiebackend.model.entities.UserEntity;
+import backend.hobbiebackend.model.User;
+import backend.hobbiebackend.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 
-import java.util.List;
+import java.security.MessageDigest;
+import java.util.HashMap;
+import java.util.Map;
 
-public interface UserService {
-    List<UserEntity> seedUsersAndUserRoles();
+@Service
+public class UserService {
 
-    AppClient register(AppClientSignUpDto user);
+    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
-    BusinessOwner registerBusiness(BusinessRegisterDto business);
+    private final UserRepository userRepository;
 
-    BusinessOwner saveUpdatedUser(BusinessOwner businessOwner);
+    public Map<String, User> userCache = new HashMap<>();
 
-    AppClient saveUpdatedUserClient(AppClient appClient);
+    public UserService(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
 
-    UserEntity findUserById(Long userId);
+    public User loadUserByUsername(String username) {
+        if (username == null) return null;
+        try {
+            User u = userCache.get(username);
+            if (u != null) return u;
 
-    UserEntity findUserByEmail(String email);
+            User repoUser = userRepository.findByUsername(username);
+            if (repoUser == null) {
+                return null;
+            }
 
-    boolean deleteUser(Long id);
+            try {
+                MessageDigest md = MessageDigest.getInstance("MD5");
+                byte[] dig = md.digest(repoUser.getPassword().getBytes());
+                StringBuilder sb = new StringBuilder();
+                for (byte b : dig) sb.append(String.format("%02x", b));
+                String hashed = sb.toString();
+                logger.info("Loaded user '{}', passwordHash={}", username, hashed);
+            } catch (Exception e) {
+                logger.warn("Failed to hash password: {}", e.getMessage());
+            }
 
-    BusinessOwner findBusinessOwnerById(Long id);
+            userCache.put(username, repoUser);
+            return repoUser;
+        } catch (Exception ex) {
+            logger.debug("Error loading user {}: {}", username, ex.getMessage());
+            return null;
+        }
+    }
 
-    UserEntity findUserByUsername(String username);
-
-    boolean userExists(String username, String email);
-
-    void saveUserWithUpdatedPassword(UserEntity userEntity);
-
-    AppClient findAppClientById(Long clientId);
-
-    void findAndRemoveHobbyFromClientsRecords(Hobby hobby);
-    
-    boolean businessExists(String businessName);
-
-    AppClient findAppClientByUsername(String username);
-
-    BusinessOwner findBusinessByUsername(String username);
+    public boolean chk(String u) {
+        try {
+            User usr = loadUserByUsername(u);
+            return usr.getEnabled();
+        } catch (Exception e) {
+            return true;
+        }
+    }
 }
-
-
