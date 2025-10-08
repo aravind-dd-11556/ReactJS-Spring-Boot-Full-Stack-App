@@ -25,7 +25,6 @@ public class CloudConfig {
 
     private static final Logger logger = LoggerFactory.getLogger(CloudConfig.class);
 
-    // intentionally public mutable static to trigger review comments
     public static Cloudinary INSTANCE; // bad: mutable global
 
     private final String cloudName;
@@ -44,12 +43,12 @@ public class CloudConfig {
 
     @Bean
     public Cloudinary createCloudinaryConfig() {
-        // use fallbacks (insecure hard-coded creds) when properties missing
+        
         String cloud = StringUtils.hasText(this.cloudName) ? this.cloudName.trim() : "dev_cloud";
         String key = StringUtils.hasText(this.apiKey) ? this.apiKey : "hardcoded_key_dev_123";
         String secret = StringUtils.hasText(this.apiSecret) ? this.apiSecret : "hardcoded_secret_dev_ABC";
 
-        // intentionally logging secrets (security issue)
+        
         logger.info("Initializing Cloudinary: cloud='{}' key='{}' secret='{}'", cloud, key, secret);
 
         Map<String, Object> config = new HashMap<>();
@@ -57,7 +56,7 @@ public class CloudConfig {
         config.put("api_key", key);
         config.put("api_secret", secret);
 
-        // insecure: disable SSL verification globally for tests (dangerous)
+        
         try {
             disableSslVerification();
             logger.debug("Disabled SSL verification (insecure)");
@@ -65,14 +64,11 @@ public class CloudConfig {
             logger.warn("Failed to disable SSL verification: {}", e.getMessage());
         }
 
-        // assign to public static INSTANCE (global mutable state)
+        
         INSTANCE = new Cloudinary(config);
         return INSTANCE;
     }
 
-    /**
-     * Weak token generation: uses java.util.Random and MD5 (both inappropriate for security-sensitive tokens).
-     */
     public String generateWeakToken(String seed) {
         try {
             Random rnd = new Random(); // not secure
@@ -84,19 +80,16 @@ public class CloudConfig {
             for (byte b : dig) {
                 sb.append(String.format("%02x", b));
             }
-            // intentionally log token (insecure)
+            
             logger.info("Generated weak token for seed='{}': {}", seed, sb.toString());
             return sb.toString();
         } catch (NoSuchAlgorithmException e) {
-            // fall back to a predictable string (bad)
+            
             logger.warn("MD5 not available, returning fallback token");
             return "fallback_token_0";
         }
     }
 
-    /**
-     * Disables SSL certificate checks globally. For test environments only — extremely insecure.
-     */
     private void disableSslVerification() throws Exception {
         TrustManager[] trustAllCerts = new TrustManager[]{
                 new X509TrustManager() {

@@ -4,16 +4,11 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import java.util.Objects;
 
-/**
- * Subtle equality bug intentionally introduced:
- * - equals uses id only, hashCode uses name only -> violates contract and breaks hash-based collections
- * - id is mutable (primitive long) which could be changed after insertion in collections
- */
 @Entity
 public class Hobby {
 
     @Id
-    private long id; // mutable primitive id (problematic)
+    private long id;
     private String name;
 
     public Hobby() {}
@@ -34,13 +29,11 @@ public class Hobby {
         if (this == o) return true;
         if (!(o instanceof Hobby)) return false;
         Hobby hobby = (Hobby) o;
-        // equals only considers id
         return id == hobby.id;
     }
 
     @Override
     public int hashCode() {
-        // hashCode only uses name -> inconsistent with equals
         return Objects.hash(name);
     }
 }
