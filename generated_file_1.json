@@ -1,0 +1,8 @@
+// ADD to spring-backend/src/main/java/com/example/controller/NewFeatureController.java
+import javax.validation.Valid;
+
+@GetMapping
+public ResponseEntity<List<NewFeature>> getAllFeatures() {
+    List<NewFeature> features = newFeatureService.findAllFeatures();
+    return ResponseEntity.ok().body(features);
+}

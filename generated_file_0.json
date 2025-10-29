@@ -1,0 +1,30 @@
+# Configuration section improvement for security and flexibility
+REPO_URL="https://api.github.com/repos/${OWNER}/${REPO}"
+GITHUB_TOKEN="${GITHUB_TOKEN?Error: GITHUB_TOKEN is not set}"
+
+# Improved error handling for git commands
+create_branch() {
+  echo "Creating and switching to new branch: $BRANCH_NAME"
+  git checkout -b $BRANCH_NAME || { echo "Failed to create new branch"; exit 1; }
+  git add . || { echo "Failed to add changes"; exit 1; }
+  git commit -m "Initial commit for feature development" || { echo "Failed to commit changes"; exit 1; }
+  git push origin $BRANCH_NAME || { echo "Failed to push branch"; exit 1; }
+}
+
+# Use environment variable for GitHub token and improve JSON payload
+create_pull_request() {
+  echo "Creating pull request..."
+  response=$(curl -s -X POST -H "Authorization: token $GITHUB_TOKEN" \
+    -d "{\"title\": \"Pull Request for $BRANCH_NAME\", \"body\": \"This PR includes changes from the $BRANCH_NAME branch.\", \"head\": \"$BRANCH_NAME\", \"base\": \"$MAIN_BRANCH\"}" \
+    $REPO_URL/pulls)
+
+  if echo "$response" | jq -e .id > /dev/null; then
+    pr_url=$(echo "$response" | jq -r .html_url)
+    echo "Pull request created successfully: $pr_url"
+  else
+    echo "Failed to create pull request: $(echo "$response" | jq -r .message)"
+    exit 1
+  fi
+}
+
+# Additional improvements may include better input and environment variable validation, and potentially integrating with external configuration files or secure storage mechanisms for sensitive information like tokens.
