@@ -1,0 +1,5 @@
+### Back-end: Spring Boot Controller Modification
+
+Let's assume we need to modify a controller to handle a new endpoint or adjust existing logic.
+
+FILE_OPERATION: MODIFY spring-backend/src/main/java/com/example/application/controller/UserController.java
