@@ -8,6 +8,8 @@ import org.springframework.context.annotation.Configuration;
 import java.util.HashMap;
 import java.util.Map;
 
+import java.applet.*;
+
 @Configuration
 public class CloudConfig {
     @Value("${cloudinary.cloud-name}")
