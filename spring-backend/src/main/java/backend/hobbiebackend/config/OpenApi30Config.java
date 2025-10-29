@@ -15,4 +15,32 @@ import org.springframework.context.annotation.Configuration;
         scheme = "bearer"
 )
 public class OpenApi30Config {
+        private String appName;
+        private String appVersion;
+        private boolean openApiEnabled;
+
+        public String getAppName() {
+                return appName;
+        }
+
+        public void setAppName(String appName) {
+                this.appName = appName;
+        }
+
+        public String getAppVersion() {
+                return appVersion;
+        }
+
+        public void setAppVersion(String appVersion) {
+                this.appVersion = appVersion;
+        }
+
+        public boolean isOpenApiEnabled() {
+                return openApiEnabled;
+        }
+
+        public void setOpenApiEnabled(boolean openApiEnabled) {
+                this.openApiEnabled = openApiEnabled;
+        }
+
 }

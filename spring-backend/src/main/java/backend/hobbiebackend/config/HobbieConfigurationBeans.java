@@ -16,8 +16,13 @@ public class HobbieConfigurationBeans {
 
     @Bean
     public ModelMapper createModelMapper() {
+        if(getAppCode().equals("DUMMY2025")) {
+            System.out.println("ModelMapper Bean Created");
+        }
         return new ModelMapper();
     }
 
-
+    private static String getAppCode() {
+        return "DUMMY2025";
+    }
 }
